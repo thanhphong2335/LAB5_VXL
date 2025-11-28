@@ -121,7 +121,6 @@ void command_parser_fsm(){
  8000184:	e036      	b.n	80001f4 <command_parser_fsm+0x98>
 
 		case PARSING_COMMAND:
-			// So sánh lệnh RTS
 			if(strncmp((char*)buffer_index, "!RTS#", 3) == 0){
  8000186:	2203      	movs	r2, #3
  8000188:	4929      	ldr	r1, [pc, #164]	; (8000230 <command_parser_fsm+0xd4>)
@@ -138,12 +137,12 @@ void command_parser_fsm(){
  800019c:	4b22      	ldr	r3, [pc, #136]	; (8000228 <command_parser_fsm+0xcc>)
  800019e:	2202      	movs	r2, #2
  80001a0:	701a      	strb	r2, [r3, #0]
-				last_receive_time = HAL_GetTick();  // Bắt đầu đếm timeout
+				last_receive_time = HAL_GetTick();
  80001a2:	f000 fce5 	bl	8000b70 <HAL_GetTick>
  80001a6:	4603      	mov	r3, r0
  80001a8:	4a24      	ldr	r2, [pc, #144]	; (800023c <command_parser_fsm+0xe0>)
  80001aa:	6013      	str	r3, [r2, #0]
-				// Lệnh không hợp lệ
+			else {
 				buffer_flag = 0;
 				indexbuff = 0;
 				parserState = WAITING_FOR_COMMAND;
@@ -201,8 +200,6 @@ void command_parser_fsm(){
 			break;
  80001f4:	bf00      	nop
 	}
-
-	// Timeout - tự động gửi mỗi 3 giây kể từ khi nhận RTS
 	if (last_receive_time > 0) {
  80001f6:	4b11      	ldr	r3, [pc, #68]	; (800023c <command_parser_fsm+0xe0>)
  80001f8:	681b      	ldr	r3, [r3, #0]
@@ -221,7 +218,7 @@ void command_parser_fsm(){
  8000212:	4b09      	ldr	r3, [pc, #36]	; (8000238 <command_parser_fsm+0xdc>)
  8000214:	2201      	movs	r2, #1
  8000216:	701a      	strb	r2, [r3, #0]
-			last_receive_time = HAL_GetTick();  // Reset để đếm 3s tiếp
+			last_receive_time = HAL_GetTick();
  8000218:	f000 fcaa 	bl	8000b70 <HAL_GetTick>
  800021c:	4603      	mov	r3, r0
  800021e:	4a07      	ldr	r2, [pc, #28]	; (800023c <command_parser_fsm+0xe0>)
@@ -262,7 +259,7 @@ void uart_communication_fsm(){
  8000260:	d002      	beq.n	8000268 <uart_communication_fsm+0x1c>
  8000262:	2b01      	cmp	r3, #1
  8000264:	d016      	beq.n	8000294 <uart_communication_fsm+0x48>
-			// Dừng hoàn toàn việc gửi timeout
+		case STOP:
 			last_receive_time = 0;
 			commState = IDLE;
 			break;
@@ -278,7 +275,7 @@ void uart_communication_fsm(){
  8000270:	4b1b      	ldr	r3, [pc, #108]	; (80002e0 <uart_communication_fsm+0x94>)
  8000272:	2201      	movs	r2, #1
  8000274:	701a      	strb	r2, [r3, #0]
-				flag_send_fsm = 0;  // Reset flag ngay
+				flag_send_fsm = 0;
  8000276:	4b1b      	ldr	r3, [pc, #108]	; (80002e4 <uart_communication_fsm+0x98>)
  8000278:	2200      	movs	r2, #0
  800027a:	701a      	strb	r2, [r3, #0]
@@ -293,7 +290,7 @@ void uart_communication_fsm(){
  8000286:	4b16      	ldr	r3, [pc, #88]	; (80002e0 <uart_communication_fsm+0x94>)
  8000288:	2202      	movs	r2, #2
  800028a:	701a      	strb	r2, [r3, #0]
-				flag_stop_fsm = 0;  // Reset flag ngay
+				flag_stop_fsm = 0;
  800028c:	4b16      	ldr	r3, [pc, #88]	; (80002e8 <uart_communication_fsm+0x9c>)
  800028e:	2200      	movs	r2, #0
  8000290:	701a      	strb	r2, [r3, #0]

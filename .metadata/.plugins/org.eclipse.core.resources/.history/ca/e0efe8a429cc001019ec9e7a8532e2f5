@@ -1,0 +1,86 @@
+/*
+ * fsm.c
+ *
+ *  Created on: 27 thg 11, 2025
+ *      Author: Thanh Phong
+ */
+#include "fsm.h"
+#include <stdio.h>
+
+// Khai báo biến state
+CommandParserState parserState = WAITING_FOR_COMMAND;
+CommandCommunicationState commState = IDLE;
+
+// Khai báo extern các biến cần thiết từ main
+extern ADC_HandleTypeDef hadc1;
+extern UART_HandleTypeDef huart2;
+
+void command_parser_fsm(){
+	switch (parserState){
+		case WAITING_FOR_COMMAND:
+			if(buffer_flag == 1){
+				parserState = PARSING_COMMAND;
+			}
+			break;
+
+		case PARSING_COMMAND:
+			if(strncmp((char*)buffer_index, "!RST#", 5) == 0){
+				flag_send_fsm = 1;
+				parserState = COMPLETED_COMMAND;
+				last_receive_time = HAL_GetTick();
+				if (last_receive_time > 0) {
+					if (HAL_GetTick() - last_receive_time >= 3000 ) {
+						flag_send_fsm = 1;
+						last_receive_time = HAL_GetTick();
+					}
+				}
+			}
+			else if(strncmp((char*)buffer_index, "!OK#", 4) == 0){
+				flag_stop_fsm = 1;
+				parserState = COMPLETED_COMMAND;
+			}
+			else {
+				buffer_flag = 0;
+				indexbuff = 0;
+				parserState = WAITING_FOR_COMMAND;
+			}
+			break;
+
+		case COMPLETED_COMMAND:
+			buffer_flag = 0;
+			indexbuff = 0;
+			parserState = WAITING_FOR_COMMAND;
+			break;
+	}
+
+}
+
+void uart_communication_fsm(){
+	uint32_t ADC_value;
+	char str[50];
+
+	switch (commState){
+		case IDLE:
+			if(flag_send_fsm == 1){
+				commState = SEND;
+				flag_send_fsm = 0;
+			}
+			else if(flag_stop_fsm == 1){
+				commState = STOP;
+				flag_stop_fsm = 0;
+			}
+			break;
+
+		case SEND:
+			ADC_value = HAL_ADC_GetValue(&hadc1);
+			sprintf(str, "!ADC=%lu#\r\n", ADC_value);
+			HAL_UART_Transmit(&huart2, (uint8_t *)str, strlen(str), 1000);
+			commState = IDLE;
+			break;
+
+		case STOP:
+			last_receive_time = 0;
+			commState = IDLE;
+			break;
+	}
+}
