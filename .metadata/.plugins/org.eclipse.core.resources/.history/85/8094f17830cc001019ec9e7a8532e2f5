@@ -65,7 +65,6 @@ static void MX_TIM2_Init(void);
 /* USER CODE BEGIN 0 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 	if (huart->Instance == USART2) {
-
 		if(temp == 8 || temp == 127) {
 			if(indexbuff > 0) {
 				indexbuff--;
@@ -76,19 +75,18 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 
 		else {
 			HAL_UART_Transmit(&huart2, &temp, 1, 10);
-
-			buffer_index[indexbuff++] = temp;
-
-			if (temp == '#') {
-				buffer_flag = 1;
-			}
-
-			if(indexbuff >= MAX_BUFFER_SIZE){
-				indexbuff = 0;
+			if(indexbuff < MAX_BUFFER_SIZE - 1 && buffer_flag == 0){
+				if(temp == '\r' || temp == '\n' ||temp =='#'){
+					if(indexbuff > 0){
+						buffer_index[indexbuff] = '\0';
+						buffer_flag = 1;
+					}
+				}
+				else {
+					buffer_index[indexbuff++] = temp;
+				}
 			}
 		}
-
-
 		HAL_UART_Receive_IT(&huart2, &temp, 1);
 	}
 }

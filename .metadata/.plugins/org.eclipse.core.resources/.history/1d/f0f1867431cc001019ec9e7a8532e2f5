@@ -66,6 +66,7 @@ static void MX_TIM2_Init(void);
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 	if (huart->Instance == USART2) {
 
+		// 1. Xử lý Backspace (ASCII 8 hoặc 127)
 		if(temp == 8 || temp == 127) {
 			if(indexbuff > 0) {
 				indexbuff--;
@@ -73,22 +74,26 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 				HAL_UART_Transmit(&huart2, (uint8_t*)backspace_seq, 3, 10);
 			}
 		}
-
+		// 2. Xử lý ký tự thường
 		else {
-			HAL_UART_Transmit(&huart2, &temp, 1, 10);
+			HAL_UART_Transmit(&huart2, &temp, 1, 10); // Echo lại ký tự
 
+			// Lưu vào buffer
 			buffer_index[indexbuff++] = temp;
 
+			// --- ĐIỂM SỬA QUAN TRỌNG ---
+			// Kiểm tra ngay nếu ký tự vừa nhập là '#'
 			if (temp == '#') {
-				buffer_flag = 1;
+				buffer_flag = 1; // Bật cờ xử lý ngay lập tức
 			}
 
+			// Xử lý tràn buffer (nếu gõ quá dài mà không có #)
 			if(indexbuff >= MAX_BUFFER_SIZE){
-				indexbuff = 0;
+				indexbuff = 0; // Reset để tránh lỗi bộ nhớ
 			}
 		}
 
-
+		// Tiếp tục nhận ký tự tiếp theo
 		HAL_UART_Receive_IT(&huart2, &temp, 1);
 	}
 }
