@@ -19,7 +19,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
+#include "fsm.h"
+#include "timer.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -42,6 +43,8 @@
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
 
+TIM_HandleTypeDef htim2;
+
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
@@ -53,21 +56,35 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_ADC1_Init(void);
+static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
-uint8_t temp = 0;
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
-	if(huart->Instance == USART2){
-		 HAL_UART_Transmit(&huart2, &temp, 1, 50);
-		 HAL_UART_Receive_IT(&huart2, &temp, 1);
+	if (huart->Instance == USART2) {
+		HAL_UART_Transmit(&huart2, &temp, 1, 10);
+		// Chỉ xử lý khi buffer chưa đầy và chưa có lệnh đang chờ xử lý
+		if(indexbuff < MAX_BUFFER_SIZE - 1 && buffer_flag == 0){
+			if(temp == '\r' || temp == '\n' ){
+				// Kết thúc lệnh khi gặp Enter
+				if(indexbuff > 0){
+					buffer_index[indexbuff] = '\0';
+					buffer_flag = 1;
+				}
+			}
+			else {
+				// Lưu ký tự vào buffer
+				buffer_index[indexbuff++] = temp;
+			}
+		}
+
+		// Tiếp tục nhận ký tự tiếp theo
+		HAL_UART_Receive_IT(&huart2, &temp, 1);
 	}
 }
-
 /* USER CODE END 0 */
 
 /**
@@ -100,14 +117,30 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   MX_ADC1_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
+
   HAL_UART_Receive_IT(&huart2, &temp, 1);
+  HAL_ADC_Start(&hadc1);
+  HAL_TIM_Base_Start_IT(&htim2);
+
+  char start_msg[] = "============= SYSTEM READY =============\r\n";
+  HAL_UART_Transmit(&huart2, (uint8_t*)start_msg, strlen(start_msg), 1000);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  setTimer(0,500);
   while (1)
   {
+	  if(isTimerExpired(0)){
+		  HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
+		  setTimer(0, 500);
+	  }
+      command_parser_fsm();
+	  uart_communication_fsm();
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -199,6 +232,51 @@ static void MX_ADC1_Init(void)
   /* USER CODE BEGIN ADC1_Init 2 */
 
   /* USER CODE END ADC1_Init 2 */
+
+}
+
+/**
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM2_Init(void)
+{
+
+  /* USER CODE BEGIN TIM2_Init 0 */
+
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 7999;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 9;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
+
+  /* USER CODE END TIM2_Init 2 */
 
 }
 

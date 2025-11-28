@@ -1,0 +1,653 @@
+
+
+02:46:48 **** Incremental Build of configuration Debug for project lab5_ex **** make -j16 all arm-none-eabi-gcc "../Core/Src/fsm.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Le
+
+pasted
+
+
+fsm.c
+59 lines
+
+txt
+
+
+main.c
+363 lines
+
+txt
+
+
+timer.c
+55 lines
+
+txt
+
+
+fsm.h
+40 lines
+
+txt
+
+
+main.h
+74 lines
+
+txt
+
+
+timer.h
+20 lines
+
+txt
+
+giúp tôi sửa lỗi này
+
+Tôi thấy có nhiều lỗi trong code của bạn. Dưới đây là các sửa chữa cần thiết:
+
+Lỗi chính trong fsm.c:
+fsm.c (đã sửa)
+Code
+Lỗi trong main.c:
+main.c (phần cần sửa)
+Code
+Sửa fsm.h:
+fsm.h (đã sửa)
+Code
+Tạo file global.c để định nghĩa biến:
+global.c (file mới)
+Code
+Tóm tắt các lỗi đã sửa:
+fsm.c:
+Thiếu khai báo biến state (parserState và commState)
+Thiếu #include <stdio.h> cho hàm sprintf
+Thiếu break trong switch-case
+Sai kiểu dữ liệu cho ADC_value (phải là uint32_t)
+Sai format string (%ld → %lu)
+Thiếu khai báo extern cho hadc1 và huart2
+Khai báo biến trong case cần đặt trong block {}
+main.c:
+Thiếu dấu } đóng hàm HAL_UART_RxCpltCallback
+Thiếu khởi tạo ADC và Timer
+Logic gọi FSM nên ở ngoài điều kiện if(buffer_flag==1)
+fsm.h:
+Các biến toàn cục nên khai báo extern trong header
+Định nghĩa thực sự đặt trong file .c riêng
+Hãy thêm file global.c vào project và build lại!
+
+
+02:52:56 **** Incremental Build of configuration Debug for project lab5_ex **** make -j16 all arm-none-eabi-gcc "../Core/Src/fsm.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Le
+
+pasted
+
+Tôi thấy vẫn còn lỗi. Hãy sửa lại như sau:
+
+1. Sửa main.c - Xóa các dòng extern:
+main.c (phần cần sửa)
+Code ∙ Version 2
+2. Sửa lại fsm.c - Đã sửa nhưng bạn chưa cập nhật:
+fsm.c (đã sửa)
+Code ∙ Version 2
+Bây giờ hãy làm theo các bước sau:
+
+Checklist sửa lỗi:
+✅ Trong main.c, đổi dòng 56-59 từ:
+c
+   extern void MX_GPIO_Init(void);
+   extern void MX_USART2_UART_Init(void);
+   extern void MX_ADC1_Init(void);
+   extern void MX_TIM2_Init(void);
+Thành:
+
+c
+   static void MX_GPIO_Init(void);
+   static void MX_USART2_UART_Init(void);
+   static void MX_ADC1_Init(void);
+   static void MX_TIM2_Init(void);
+✅ Thay thế toàn bộ file fsm.c bằng code đã sửa ở trên (sử dụng biến parserState và commState thay vì dùng tên kiểu enum)
+✅ Thay thế fsm.h bằng phiên bản đã sửa
+✅ Tạo file global.c mới trong thư mục Core/Src/
+✅ Thêm global.c vào project trong STM32CubeIDE
+Sau khi làm xong các bước trên, project sẽ build thành công! Vấn đề chính là:
+
+Lỗi 1: Conflict giữa extern và static declaration
+Lỗi 2: Dùng nhầm tên kiểu enum (CommandParserState) thay vì tên biến (parserState)
+02:54:55 **** Incremental Build of configuration Debug for project lab5_ex ****
+make -j16 all
+arm-none-eabi-gcc "../Core/Src/fsm.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/fsm.d" -MT"Core/Src/fsm.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/fsm.o"
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+../Core/Src/fsm.c:9:20: error: 'CommandParserState' redeclared as different kind of symbol
+    9 | CommandParserState CommandParserState = WAITING_FOR_COMMAND;
+      |                    ^~~~~~~~~~~~~~~~
+In file included from ../Core/Src/fsm.c:7:
+../Core/Inc/fsm.h:19:3: note: previous declaration of 'CommandParserState' was here
+   19 | } CommandParserState;
+      |   ^~~~~~~~~~~~~~
+../Core/Src/fsm.c:10:27: error: 'CommandCommunicationState' redeclared as different kind of symbol
+   10 | CommandCommunicationState CommandCommunicationState = IDLE;
+      |                           ^~~~~~~~~~~~~~~~~~~~~
+In file included from ../Core/Src/fsm.c:7:
+../Core/Inc/fsm.h:25:3: note: previous declaration of 'CommandCommunicationState' was here
+   25 | } CommandCommunicationState;
+      |   ^~~~~~~~~~~~~~~~~~~~~
+../Core/Src/fsm.c: In function 'command_parser_fsm':
+../Core/Src/fsm.c:19:24: error: 'PARSING_COMMAND' undeclared (first use in this function); did you mean 'PARSING_COMMMAND'?
+   19 |     CommandParserState=PARSING_COMMAND;
+      |                        ^~~~~~~~~~~
+      |                        PARSING_COMMMAND
+../Core/Src/fsm.c:19:24: note: each undeclared identifier is reported only once for each function it appears in
+../Core/Src/fsm.c: In function 'uart_communication_fsm':
+../Core/Src/fsm.c:55:4: error: a label can only be part of a statement and a declaration is not a statement
+   55 |    uint8_t ADC_value = HAL_ADC_GetValue(&hadc1);
+      |    ^~~
+../Core/Src/fsm.c:56:4: error: expected expression before 'char'
+   56 |    char str[30];
+      |    ^~
+../Core/Src/fsm.c:57:4: warning: implicit declaration of function 'sprintf' [-Wimplicit-function-declaration]
+   57 |    sprintf(str, "!ADC=%ld#", ADC_value);
+      |    ^~~~~
+../Core/Src/fsm.c:57:4: warning: incompatible implicit declaration of built-in function 'sprintf'
+../Core/Src/fsm.c:8:1: note: include '<stdio.h>' or provide a declaration of 'sprintf'
+    7 | #include "fsm.h"
+  +++ |+#include <stdio.h>
+    8 |
+../Core/Src/fsm.c:57:12: error: 'str' undeclared (first use in this function)
+   57 |    sprintf(str, "!ADC=%ld#", ADC_value);
+      |            ^
+../Core/Src/fsm.c:64:1: error: expected declaration or statement at end of input
+   64 | }
+      | ^
+make: *** [Core/Src/subdir.mk:40: Core/Src/fsm.o] Error 1
+make: *** Waiting for unfinished jobs....
+"make -j16 all" terminated with exit code 2. Build might be incomplete.
+02:54:56 Build Failed. 9 errors, 2 warnings. (took 338ms)
+
+Show more
+Tôi thấy vấn đề rồi! Có xung đột tên giữa kiểu enum và tên biến. Hãy sửa lại:
+
+Sửa fsm.c:
+fsm.c (đã sửa)
+Code ∙ Version 3
+Giải thích các lỗi và cách sửa:
+Lỗi "redeclared as different kind of symbol":
+Không thể dùng cùng tên cho kiểu enum và biến
+Đã đổi tên biến thành parserState và commState
+Lỗi "PARSING_COMMAND undeclared":
+Trong fsm.h bạn định nghĩa là PARSING_COMMMAND (3 chữ M)
+Phải dùng đúng tên này
+Lỗi "a label can only be part of a statement":
+Không thể khai báo biến ngay sau case mà không có {}
+Đã di chuyển khai báo biến ra ngoài switch
+File fsm.c đã sửa hoàn chỉnh ở trên. Thay thế và build lại!
+
+Nếu vẫn còn lỗi, hãy đảm bảo:
+
+File global.c đã được thêm vào project
+File fsm.h đã được cập nhật theo artifact tôi gửi trước đó
+02:57:01 **** Incremental Build of configuration Debug for project lab5_ex ****
+make -j16 all
+arm-none-eabi-gcc "../Core/Src/fsm.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/fsm.d" -MT"Core/Src/fsm.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/fsm.o"
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+../Core/Src/fsm.c: In function 'command_parser_fsm':
+../Core/Src/fsm.c:22:19: error: 'PARSING_COMMMAND' undeclared (first use in this function); did you mean 'PARSING_COMMAND'?
+   22 |     parserState = PARSING_COMMMAND;  // ChÃº Ã½: PARSING_COMMMAND (3 chá»¯ M)
+      |                   ^~~~~~~~~~~~~~
+      |                   PARSING_COMMAND
+../Core/Src/fsm.c:22:19: note: each undeclared identifier is reported only once for each function it appears in
+../Core/Src/fsm.c:19:2: warning: enumeration value 'PARSING_COMMAND' not handled in switch [-Wswitch]
+   19 |  switch (parserState){
+      |  ^~~~
+make: *** [Core/Src/subdir.mk:40: Core/Src/fsm.o] Error 1
+make: *** Waiting for unfinished jobs....
+"make -j16 all" terminated with exit code 2. Build might be incomplete.
+02:57:01 Build Failed. 3 errors, 1 warnings. (took 345ms)
+
+Show more
+Tôi thấy vấn đề rồi! Trong fsm.h có lỗi chính tả. Hãy sửa:
+
+Sửa fsm.h - Đổi tên enum:
+fsm.h (đã sửa)
+Code ∙ Version 2
+Sửa fsm.c tương ứng:
+fsm.c (đã sửa)
+Code ∙ Version 4
+Bây giờ build lại! Vấn đề là có lỗi chính tả trong tên enum:
+
+Sai: PARSING_COMMMAND (3 chữ M)
+Đúng: PARSING_COMMAND (2 chữ M)
+Đã sửa cả trong fsm.h và fsm.c. Thử build lại nhé!
+
+
+02:58:14 **** Incremental Build of configuration Debug for project lab5_ex **** make -j16 all arm-none-eabi-gcc "../Core/Src/fsm.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103x6 -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Le
+
+pasted
+
+Tuyệt vời! Code đã compile thành công, nhưng bị lỗi linker vì thiếu file global.c. Bạn chưa thêm file này vào project.
+
+Cách thêm global.c vào STM32CubeIDE:
+Bước 1: Tạo file global.c trong thư mục Core/Src/
+
+Bước 2: Refresh project trong STM32CubeIDE (F5 hoặc right-click → Refresh)
+
+Bước 3: Đảm bảo file được thêm vào build
+
+Hoặc bạn có thể đơn giản hơn: Thêm định nghĩa biến trực tiếp vào main.c
+
+main.c (phần cần sửa)
+Code ∙ Version 3
+Nhưng để làm vậy, bạn cần include fsm.h trong main.c để có định nghĩa MAX_BUFFER_SIZE. Main.c đã include fsm.h rồi nên OK!
+
+Bây giờ build lại và sẽ thành công!
+
+Tóm tắt giải pháp:
+Có 2 cách:
+
+Cách 1: Thêm vào main.c (Đơn giản nhất)
+Thêm đoạn code sau vào phần /* USER CODE BEGIN PV */ trong main.c:
+
+c
+/* USER CODE BEGIN PV */
+// Định nghĩa các biến toàn cục cho FSM
+uint8_t  buffer_index[MAX_BUFFER_SIZE];
+uint8_t  indexbuff = 0;
+uint8_t  temp = 0;
+uint8_t  buffer_flag = 0;
+uint8_t  flag_send_fsm = 0;
+uint8_t  flag_stop_fsm = 0;
+uint32_t last_receive_time = 0;
+uint8_t  timeout_flag = 0;
+/* USER CODE END PV */
+Cách 2: Tạo file global.c riêng
+Tạo file global.c trong Core/Src/ với nội dung từ artifact tôi đã tạo trước đó, sau đó refresh project trong IDE.
+
+Khuyến nghị: Dùng Cách 1 cho nhanh!
+
+sao tôi không thể gõ dấu ! vào terminal của proteus
+
+Vấn đề này khá phổ biến khi sử dụng Virtual Terminal trong Proteus. Có một số cách giải quyết:
+
+Giải pháp:
+1. Sử dụng phím tắt hoặc ASCII code
+Thử bấm Shift + 1 để gõ dấu !
+Nếu không được, thử Alt + 33 (33 là mã ASCII của !)
+2. Copy-paste
+Copy ký tự ! từ nơi khác và paste vào Terminal
+3. Sử dụng Virtual Terminal khác
+Thay vì dùng Virtual Terminal của Proteus, bạn có thể:
+
+Option A: Dùng Tera Term, PuTTY hoặc RealTerm
+
+Cài đặt com0com để tạo virtual COM port
+Kết nối STM32 virtual COM với phần mềm terminal thực
+Option B: Dùng COMPIM trong Proteus
+
+Thêm component COMPIM vào circuit
+Kết nối COMPIM với UART của STM32
+Dùng terminal thật (Tera Term, Arduino Serial Monitor...) để kết nối
+4. Thay đổi keyboard layout
+Kiểm tra xem keyboard layout của Windows có đúng không
+Thử chuyển sang US keyboard layout
+5. Sửa code để test
+Tạm thời thay đổi protocol để test:
+
+fsm.c (protocol thay thế cho test)
+Code
+6. Kiểm tra Virtual Terminal Settings trong Proteus
+Trong Proteus:
+
+Double-click vào Virtual Terminal
+Kiểm tra các settings:
+Baud rate: 9600 (phải trùng với UART config)
+Echo typed characters: Bật để xem gì đang gõ
+Send on Enter: có thể chọn CR, LF hoặc CR+LF
+Khuyến nghị:
+Giải pháp tốt nhất: Dùng COMPIM + Tera Term
+
+Thêm COMPIM vào Proteus
+Set COMPIM port (ví dụ: COM3)
+Kết nối TX/RX của STM32 với COMPIM
+Mở Tera Term, connect tới COM3
+Giờ bạn có thể gõ bất kỳ ký tự nào!
+Bạn đang gặp vấn đề cụ thể gì với Virtual Terminal? Bạn muốn tôi hướng dẫn setup COMPIM + Tera Term chi tiết không?
+
+/*
+ * fsm.c
+ *
+ *  Created on: 27 thg 11, 2025
+ *      Author: Thanh Phong
+ */
+#include "fsm.h"
+#include <stdio.h>
+// Khai báo biến state với tên khác để tránh xung đột
+CommandParserState parserState = WAITING_FOR_COMMAND;
+CommandCommunicationState commState = IDLE;
+// Khai báo extern các biến cần thiết từ main
+extern ADC_HandleTypeDef hadc1;
+extern UART_HandleTypeDef huart2;
+void command_parser_fsm(){
+    switch (parserState){
+        case WAITING_FOR_COMMAND:
+            if(buffer_flag == 1){
+                parserState = PARSING_COMMAND;
+            }
+            break;
+        case PARSING_COMMAND:
+            if(strncmp((char*)buffer_index, "RTS", 3) == 0){
+                flag_send_fsm = 1;
+                parserState = COMPLETED_COMMAND;
+                last_receive_time = HAL_GetTick();
+            }
+            if(strncmp((char*)buffer_index, "OK", 2) == 0){
+                flag_stop_fsm = 1;
+                parserState = COMPLETED_COMMAND;
+            }
+            break;
+        case COMPLETED_COMMAND:
+            flag_send_fsm = 0;
+            flag_stop_fsm = 0;
+            buffer_flag = 0;
+            indexbuff = 0;
+            parserState = WAITING_FOR_COMMAND;
+            break;
+    }
+    if (HAL_GetTick() - last_receive_time > 3000 && !timeout_flag) {
+        timeout_flag = 1;
+        flag_send_fsm = 1;
+    }
+}
+void uart_communication_fsm(){
+    uint32_t ADC_value;
+    char str[30];
+    switch (commState){
+        case IDLE:
+            if(flag_send_fsm == 1){
+                commState = SEND;
+            }
+            else if(flag_stop_fsm == 1){
+                commState = STOP;
+            }
+            break;
+        case SEND:
+            ADC_value = HAL_ADC_GetValue(&hadc1);
+            sprintf(str, "!ADC=%lu#\n", ADC_value);
+            HAL_UART_Transmit(&huart2, (uint8_t *)str, strlen(str), 1000);
+            timeout_flag = 0;
+            commState = IDLE;
+            break;
+        case STOP:
+            commState = IDLE;
+            break;
+    }
+}
+sao tôi sửa lại để test mà nhấn RTS mà không ra gì
+
+Show more
+Có một số vấn đề có thể khiến code không hoạt động. Hãy debug từng bước:
+
+Các vấn đề có thể gặp:
+1. Buffer không được xử lý đúng
+fsm.c (protocol thay thế cho test)
+Code ∙ Version 2
+2. Kiểm tra main.c - Logic gọi FSM
+main.c - Phần while loop (debug version)
+Code
+3. Kiểm tra UART Callback
+UART Callback (debug version)
+Code
+Checklist Debug:
+Bước 1: Kiểm tra UART có hoạt động không
+Thêm code test đơn giản trong main():
+
+c
+/* USER CODE BEGIN 2 */
+HAL_UART_Receive_IT(&huart2, &temp, 1);
+HAL_ADC_Start(&hadc1);
+HAL_TIM_Base_Start_IT(&htim2);
+
+// Test UART
+char test_msg[] = "UART Ready!\r\n";
+HAL_UART_Transmit(&huart2, (uint8_t*)test_msg, strlen(test_msg), 1000);
+/* USER CODE END 2 */
+Nếu thấy "UART Ready!" → UART OK
+
+Bước 2: Kiểm tra có nhận được ký tự không
+Với callback có echo (code ở trên), khi bạn gõ "RTS" sẽ thấy "RTS" hiện lại trên terminal.
+
+Nếu không thấy echo → Vấn đề ở UART RX hoặc callback
+
+Bước 3: Kiểm tra buffer_flag
+Thêm debug message:
+
+c
+case PARSING_COMMAND:
+    // Debug: In ra buffer nhận được
+    char debug[50];
+    sprintf(debug, "Received: %s\r\n", buffer_index);
+    HAL_UART_Transmit(&huart2, (uint8_t*)debug, strlen(debug), 1000);
+
+    if(strncmp((char*)buffer_index, "RTS", 3) == 0){
+        flag_send_fsm = 1;
+        parserState = COMPLETED_COMMAND;
+        last_receive_time = HAL_GetTick();
+    }
+Bước 4: Kiểm tra ADC
+Kiểm tra xem ADC có giá trị không:
+
+c
+case SEND:
+    ADC_value = HAL_ADC_GetValue(&hadc1);
+    sprintf(str, "ADC=%lu\r\n", ADC_value);
+    HAL_UART_Transmit(&huart2, (uint8_t *)str, strlen(str), 1000);
+Vấn đề thường gặp:
+Quên bật ADC: HAL_ADC_Start(&hadc1); trong main
+Quên bật Timer: HAL_TIM_Base_Start_IT(&htim2); trong main
+Kết nối sai trong Proteus: TX-RX phải cross (TX của STM32 nối RX của Terminal)
+Baud rate không khớp: Phải cùng 9600
+Buffer không reset: indexbuff = 0 sau khi xử lý xong
+Hãy thử thêm các debug message và cho tôi biết bạn thấy gì trên terminal!
+
+tôi nhấn RTS đã có echo và đã xuất ra định dạng,nhưng sau 3s lại không xuất tiếp mà tôi enter thì lại xuất liên tục rất nhiều trên cùng 1 dòng gần như cùng lcus
+
+Tôi hiểu vấn đề rồi! Có 2 lỗi:
+
+Timeout logic bị lỗi - biến last_receive_time không được khởi tạo ban đầu
+Buffer bị tràn - khi nhấn Enter liên tục làm FSM chạy nhiều lần
+Sửa code:
+fsm.c (protocol thay thế cho test)
+Code ∙ Version 3
+global.c (file mới)
+Code ∙ Version 2
+Giải thích các thay đổi:
+1. Sửa logic timeout:
+c
+// Chỉ kiểm tra timeout khi last_receive_time > 0 (đã nhận RTS)
+if (last_receive_time > 0 &&
+    HAL_GetTick() - last_receive_time >= 3000 &&
+    !timeout_flag) {
+    timeout_flag = 1;
+    flag_send_fsm = 1;
+    last_receive_time = HAL_GetTick();  // Reset để gửi tiếp sau 3s
+}
+2. Reset flag ngay khi sử dụng:
+c
+case IDLE:
+    if(flag_send_fsm == 1){
+        commState = SEND;
+        flag_send_fsm = 0;  // ← Reset NGAY để tránh loop
+    }
+3. Cải thiện UART callback:
+Chỉ xử lý khi buffer_flag == 0 (tránh ghi đè)
+Bỏ qua ký tự \r \n thừa
+Không reset indexbuff trong callback (để FSM xử lý)
+4. Lệnh STOP:
+c
+case STOP:
+    timeout_flag = 0;
+    last_receive_time = 0;  // Reset về 0 để dừng timeout
+    commState = IDLE;
+    break;
+Cách hoạt động:
+Gõ "RTS" + Enter:
+Gửi ADC 1 lần ngay lập tức
+Sau 3s tự động gửi tiếp
+Cứ 3s lại gửi 1 lần
+Gõ "OK" + Enter:
+Dừng việc gửi timeout
+Reset về trạng thái chờ lệnh
+Build lại và test nhé! Bây giờ sẽ không bị gửi liên tục nữa.
+
+tôi chỉ nhấn RTS enter và không có gì xảy ra
+
+Hãy debug từng bước để tìm vấn đề:
+
+Bước 1: Kiểm tra có nhận được ký tự không
+UART Callback (debug version)
+Code
+Bước 2: Thêm debug vào FSM
+fsm.c (protocol thay thế cho test)
+Code
+Bước 3: Kiểm tra main.c
+Đảm bảo trong main() có:
+
+main.c - Phần quan trọng cần kiểm tra
+Code
+Checklist debug:
+Build lại và quan sát trên Terminal khi gõ "RTS" + Enter, bạn sẽ thấy:
+
+Nếu thấy echo "RTS": ✓ UART RX hoạt động
+Nếu thấy "[RX_OK]": ✓ Callback hoạt động, buffer_flag = 1
+Nếu thấy "[BUFFER: RTS]": ✓ FSM nhận được buffer
+Nếu thấy "[PARSING...]": ✓ Vào state PARSING
+Nếu thấy "[RTS MATCHED!]": ✓ So sánh string thành công
+Nếu thấy "[SENDING...]": ✓ flag_send_fsm = 1
+**Nếu thấy "!ADC=xx
+
+
+How can I help you today?
+
+
+
+
+
+
+/*
+ * fsm.c
+ *
+ *  Created on: 27 thg 11, 2025
+ *      Author: Thanh Phong
+ */
+#include "fsm.h"
+#include <stdio.h>
+
+// Khai báo biến state
+CommandParserState parserState = WAITING_FOR_COMMAND;
+CommandCommunicationState commState = IDLE;
+
+// Khai báo extern các biến cần thiết từ main
+extern ADC_HandleTypeDef hadc1;
+extern UART_HandleTypeDef huart2;
+
+void command_parser_fsm(){
+	char debug_msg[50];
+
+	switch (parserState){
+		case WAITING_FOR_COMMAND:
+			if(buffer_flag == 1){
+				parserState = PARSING_COMMAND;
+
+				// DEBUG: In buffer nhận được
+				sprintf(debug_msg, "[BUFFER: %s]\r\n", buffer_index);
+				HAL_UART_Transmit(&huart2, (uint8_t*)debug_msg, strlen(debug_msg), 100);
+			}
+			break;
+
+		case PARSING_COMMAND:
+			// DEBUG: Kiểm tra so sánh
+			sprintf(debug_msg, "[PARSING...]\r\n");
+			HAL_UART_Transmit(&huart2, (uint8_t*)debug_msg, strlen(debug_msg), 100);
+
+			// So sánh lệnh RTS
+			if(strncmp((char*)buffer_index, "RTS", 3) == 0){
+				sprintf(debug_msg, "[RTS MATCHED!]\r\n");
+				HAL_UART_Transmit(&huart2, (uint8_t*)debug_msg, strlen(debug_msg), 100);
+
+				flag_send_fsm = 1;
+				parserState = COMPLETED_COMMAND;
+				last_receive_time = HAL_GetTick();
+				timeout_flag = 0;
+			}
+			// So sánh lệnh OK
+			else if(strncmp((char*)buffer_index, "OK", 2) == 0){
+				sprintf(debug_msg, "[OK MATCHED!]\r\n");
+				HAL_UART_Transmit(&huart2, (uint8_t*)debug_msg, strlen(debug_msg), 100);
+
+				flag_stop_fsm = 1;
+				parserState = COMPLETED_COMMAND;
+				timeout_flag = 0;
+			}
+			else {
+				sprintf(debug_msg, "[UNKNOWN CMD]\r\n");
+				HAL_UART_Transmit(&huart2, (uint8_t*)debug_msg, strlen(debug_msg), 100);
+
+				buffer_flag = 0;
+				indexbuff = 0;
+				parserState = WAITING_FOR_COMMAND;
+			}
+			break;
+
+		case COMPLETED_COMMAND:
+			sprintf(debug_msg, "[COMPLETED]\r\n");
+			HAL_UART_Transmit(&huart2, (uint8_t*)debug_msg, strlen(debug_msg), 100);
+
+			buffer_flag = 0;
+			indexbuff = 0;
+			parserState = WAITING_FOR_COMMAND;
+			break;
+	}
+
+	// Timeout - tự động gửi sau 3 giây
+	if (last_receive_time > 0 &&
+	    HAL_GetTick() - last_receive_time >= 3000 &&
+	    !timeout_flag) {
+		timeout_flag = 1;
+		flag_send_fsm = 1;
+		last_receive_time = HAL_GetTick();
+	}
+}
+
+void uart_communication_fsm(){
+	uint32_t ADC_value;
+	char str[50];
+
+	switch (commState){
+		case IDLE:
+			if(flag_send_fsm == 1){
+				sprintf(str, "[SENDING...]\r\n");
+				HAL_UART_Transmit(&huart2, (uint8_t*)str, strlen(str), 100);
+
+				commState = SEND;
+				flag_send_fsm = 0;
+			}
+			else if(flag_stop_fsm == 1){
+				commState = STOP;
+				flag_stop_fsm = 0;
+			}
+			break;
+
+		case SEND:
+			ADC_value = HAL_ADC_GetValue(&hadc1);
+			sprintf(str, "!ADC=%lu#\r\n", ADC_value);
+			HAL_UART_Transmit(&huart2, (uint8_t *)str, strlen(str), 1000);
+			commState = IDLE;
+			break;
+
+		case STOP:
+			sprintf(str, "[STOPPED]\r\n");
+			HAL_UART_Transmit(&huart2, (uint8_t*)str, strlen(str), 100);
+
+			timeout_flag = 0;
+			last_receive_time = 0;
+			commState = IDLE;
+			break;
+	}
+}
+Claude
