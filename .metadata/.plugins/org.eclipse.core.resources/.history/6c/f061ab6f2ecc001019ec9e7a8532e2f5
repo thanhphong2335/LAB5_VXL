@@ -65,37 +65,19 @@ static void MX_TIM2_Init(void);
 /* USER CODE BEGIN 0 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 	if (huart->Instance == USART2) {
-
-		// 1. Xử lý Backspace (ASCII 8) hoặc Delete (ASCII 127)
-		if(temp == 8 || temp == 127) {
-			if(indexbuff > 0) {
-				indexbuff--; // Xóa ký tự cuối trong buffer
-
-				// Gửi chuỗi đặc biệt để xóa ký tự trên màn hình Terminal
-				// \b: lùi con trỏ về trước 1 ô
-				// ' ': ghi đè khoảng trắng lên ký tự muốn xóa
-				// \b: lùi con trỏ về lại vị trí đó để gõ tiếp
-				char backspace_seq[] = "\b \b";
-				HAL_UART_Transmit(&huart2, (uint8_t*)backspace_seq, 3, 10);
+		HAL_UART_Transmit(&huart2, &temp, 1, 10);
+		// Chỉ xử lý khi buffer chưa đầy và chưa có lệnh đang chờ xử lý
+		if(indexbuff < MAX_BUFFER_SIZE - 1 && buffer_flag == 0){
+			if(temp == '\r' || temp == '\n' ){
+				// Kết thúc lệnh khi gặp Enter
+				if(indexbuff > 0){
+					buffer_index[indexbuff] = '\0';
+					buffer_flag = 1;
+				}
 			}
-		}
-		// 2. Xử lý các ký tự bình thường khác
-		else {
-			HAL_UART_Transmit(&huart2, &temp, 1, 10); // Echo ký tự vừa gõ lên màn hình
-
-			// Chỉ xử lý khi buffer chưa đầy và chưa có lệnh đang chờ xử lý
-			if(indexbuff < MAX_BUFFER_SIZE - 1 && buffer_flag == 0){
-				if(temp == '\r' || temp == '\n' ){
-					// Kết thúc lệnh khi gặp Enter
-					if(indexbuff > 0){
-						buffer_index[indexbuff] = '\0';
-						buffer_flag = 1;
-					}
-				}
-				else {
-					// Lưu ký tự vào buffer
-					buffer_index[indexbuff++] = temp;
-				}
+			else {
+				// Lưu ký tự vào buffer
+				buffer_index[indexbuff++] = temp;
 			}
 		}
 

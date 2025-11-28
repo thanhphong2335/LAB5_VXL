@@ -7,7 +7,7 @@
 #include "stdint.h"
 #include <string.h>
 #include "stm32f1xx_hal.h"  // Đảm bảo rằng thư viện HAL được bao gồm để sử dụng HAL_GetTick
-#include "global.h"
+
 
 #ifndef INC_FSM_H_
 #define INC_FSM_H_
@@ -33,7 +33,6 @@ extern uint8_t  flag_send_fsm;
 extern uint8_t  flag_stop_fsm;
 extern uint32_t last_receive_time;
 extern uint8_t  timeout_flag;
-uint32_t ADC_value;
 
 void command_parser_fsm();
 void uart_communication_fsm();

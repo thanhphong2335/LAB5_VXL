@@ -17,4 +17,3 @@ uint8_t  flag_send_fsm = 0;
 uint8_t  flag_stop_fsm = 0;
 uint32_t last_receive_time = 0;
 uint8_t  timeout_flag = 0;
-extern uint32_t ADC_value ;
